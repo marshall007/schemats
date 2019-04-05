@@ -27,6 +27,8 @@ export class Options implements OptionValues {
     schema: string
     table: string[]
 
+    private db: Database
+
     constructor (options: OptionValues) {
         this.camelCase = options.camelCase || false
         this.connectionString = options.connectionString
@@ -34,6 +36,8 @@ export class Options implements OptionValues {
         this.output = options.output
         this.schema = options.schema || 'public'
         this.table = ([] as string[]).concat(options.table || [])
+
+        this.db = Options.getDatabase(this.connectionString)
     }
 
     static fromArgv (): Options {
@@ -71,19 +75,9 @@ export class Options implements OptionValues {
         return new Options(argv)
     }
 
-    getSQLVersion (): SQLVersion {
-        if (/^postgres(ql)?:\/\//i.test(this.connectionString)) {
-            return SQLVersion.POSTGRES
-        }
-        if (/^mysql:\/\//i.test(this.connectionString)) {
-            return SQLVersion.MYSQL
-        }
-        return SQLVersion.UNKNOWN
-    }
-
-    getDatabase (): Database {
-        return new PostgresDatabase(this.connectionString)
-        // switch (getSQLVersion(connection)) {
+    static getDatabase (connection: string): Database {
+        return new PostgresDatabase(connection)
+        // switch (Options.getSQLVersion(connection)) {
         //     case SQLVersion.MYSQL:
         //         return new MysqlDatabase(connection)
         //     case SQLVersion.POSTGRES:
@@ -93,8 +87,18 @@ export class Options implements OptionValues {
         // }
     }
 
+    static getSQLVersion (connection: string): SQLVersion {
+        if (/^postgres(ql)?:\/\//i.test(connection)) {
+            return SQLVersion.POSTGRES
+        }
+        if (/^mysql:\/\//i.test(connection)) {
+            return SQLVersion.MYSQL
+        }
+        return SQLVersion.UNKNOWN
+    }
+
     async getSchema () {
-        const schema = await this.getDatabase().getSchema(this)
+        const schema = await this.db.getSchema(this)
         return this.table.length
             ? schema.filter(s => s.type !== 'table' || ~this.table.indexOf(s.name))
             : schema

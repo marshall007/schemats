@@ -94,6 +94,22 @@ export function generate (defs: SchemaDefinition[], options: Options) {
         ${buildHeader(options)}
 
         export namespace customTypes {
+
+        /**
+         * PostgreSQL [interval values](https://www.postgresql.org/docs/9.1/datatype-datetime.html#DATATYPE-INTERVAL-INPUT) can be written using the following verbose syntax:
+         *
+         * - \`1 year\`
+         * - \`1 year 0 month 0 day 00:00:00\`
+         * - \`+1-0 +0 +00:00:00\`
+         * - \`1 hour 10 minute\`
+         * - \`01:10:00\`
+         *
+         * where quantity is a number (possibly signed); unit is microsecond, millisecond, second, minute, hour, day, week, month, year, decade, century, millennium, or abbreviations or plurals of these units; direction can be ago or empty.
+         *
+         * Quantities of days, hours, minutes, and seconds can be specified without explicit unit markings. For example, '1 12:59:10' is read the same as '1 day 12 hours 59 min 10 sec'. Also, a combination of years and months can be specified with a dash; for example '200-10' is read the same as '200 years 10 months'. (These shorter forms are in fact the only ones allowed by the SQL standard, and are used for output when IntervalStyle is set to sql_standard.)
+         */
+        export type _pg_interval = string;
+
         ${enumNamespace.join('\n')}
 
         ${customInterfaces.join('\n')}

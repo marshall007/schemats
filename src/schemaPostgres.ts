@@ -24,7 +24,7 @@ export class PostgresDatabase implements Database {
 
     private static mapTableDefinitionsToType<T extends TableDefinition | CustomDefinition> (definitions: T[], customTypes: string[], options: Options): T[] {
         for (const def of definitions) {
-            for (const [ key, column ] of toPairs(def.columns)) {
+            for (const [ _, column ] of toPairs(def.columns)) {
                 column.tsType = this.toTSType(column.udtName, customTypes, options)
             }
         }
@@ -44,7 +44,6 @@ export class PostgresDatabase implements Database {
             case 'inet':
             case 'time':
             case 'timetz':
-            case 'interval':
             case 'name':
                 return 'string'
             case 'int2':
@@ -65,6 +64,8 @@ export class PostgresDatabase implements Database {
             case 'timestamp':
             case 'timestamptz':
                 return 'Date'
+            case 'interval':
+                return 'customTypes._pg_interval'
             case '_int2':
             case '_int4':
             case '_int8':
@@ -153,10 +154,6 @@ export class PostgresDatabase implements Database {
             ...PostgresDatabase.mapTableDefinitionsToType(types, customTypes, options),
             ...PostgresDatabase.mapTableDefinitionsToType(tables, customTypes, options)
         ]
-    }
-
-    getDefaultSchema (): string {
-        return 'public'
     }
 
     private toTableDefinitions<T extends TableDefinition | CustomDefinition> (columns: PgColumnInfo[], type: T['type']): T[] {

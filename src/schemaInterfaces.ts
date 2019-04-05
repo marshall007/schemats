@@ -38,7 +38,6 @@ export type SchemaDefinition =
 export interface Database {
     connectionString: string
     query (queryString: string): Promise<Object[]>
-    getDefaultSchema (): string
 
     getSchema (options: Options): Promise<SchemaDefinition[]>
 
