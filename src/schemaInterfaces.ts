@@ -1,21 +1,48 @@
-import Options from './options'
+import { Options } from './options'
 
 export interface ColumnDefinition {
     udtName: string,
+    hasDefault: boolean,
     nullable: boolean,
     tsType?: string
 }
 
-export interface TableDefinition {
-    [columnName: string]: ColumnDefinition
+export interface DbDefinition {
+    name: string
 }
+
+export interface TableDefinition extends DbDefinition {
+    type: 'table'
+    columns: {
+        [columnName: string]: ColumnDefinition
+    }
+}
+
+export interface CustomDefinition extends DbDefinition {
+    type: 'custom'
+    columns: {
+        [columnName: string]: ColumnDefinition
+    }
+}
+
+export interface EnumDefinition extends DbDefinition {
+    type: 'enum'
+    values: string[]
+}
+
+export type SchemaDefinition =
+    | TableDefinition
+    | CustomDefinition
+    | EnumDefinition
 
 export interface Database {
     connectionString: string
     query (queryString: string): Promise<Object[]>
     getDefaultSchema (): string
-    getEnumTypes (schema?: string): any
-    getTableDefinition (tableName: string, tableSchema: string): Promise<TableDefinition>
-    getTableTypes (tableName: string, tableSchema: string, options: Options): Promise<TableDefinition>
-    getSchemaTables (schemaName: string): Promise<string[]>
+
+    getSchema (options: Options): Promise<SchemaDefinition[]>
+
+    getEnumTypes (schemaName: string): Promise<EnumDefinition[]>
+    getUserDefinedTypes (schemaName: string): Promise<CustomDefinition[]>
+    getTableTypes (schemaName: string): Promise<TableDefinition[]>
 }
