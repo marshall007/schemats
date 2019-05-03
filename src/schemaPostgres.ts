@@ -24,8 +24,8 @@ export class PostgresDatabase implements Database {
 
     private static mapTableDefinitionsToType<T extends TableDefinition | CustomDefinition> (definitions: T[], customTypes: string[], options: Options): T[] {
         for (const def of definitions) {
-            for (const [ _, column ] of toPairs(def.columns)) {
-                column.tsType = this.toTSType(column.udtName, customTypes, options)
+            for (const key of Object.keys(def.columns)) {
+                def.columns[key].tsType = this.toTSType(def.columns[key].udtName, customTypes, options)
             }
         }
 
@@ -125,6 +125,7 @@ export class PostgresDatabase implements Database {
             SELECT udt_name as "table_name", attribute_name as "column_name", attribute_udt_name as "udt_name", is_nullable, attribute_default as "column_default"
             FROM information_schema.attributes
             WHERE udt_schema = $1
+            ORDER BY udt_name, ordinal_position
         `, [schemaName])
 
         return this.toTableDefinitions(columns, 'custom')
@@ -135,6 +136,7 @@ export class PostgresDatabase implements Database {
             SELECT table_name, column_name, udt_name, is_nullable, column_default
             FROM information_schema.columns
             WHERE table_schema = $1
+            ORDER BY table_name, ordinal_position
         `, [schemaName])
 
         return this.toTableDefinitions(columns, 'table')
