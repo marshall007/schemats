@@ -79,7 +79,8 @@ export function generateInterface (table: TableDefinition | CustomDefinition, op
 
 export function generate (defs: SchemaDefinition[], options: Options) {
     const enumNamespace = options.getTypes<EnumDefinition>(defs, 'enum').map(({ name, values }) =>
-        `export type ${options.transformTypeName(name)} = '${sortBy(values).join(`' | '`)}';`
+        `export type ${options.transformTypeName(name)} = '${sortBy(values).join(`' | '`)}';
+        export const ${options.transformTypeName(name)}_all_values = ['${sortBy(values).join(`', '`)}'];`
     )
 
     const customInterfaces = options.getTypes<CustomDefinition>(defs, 'custom').map((table) =>

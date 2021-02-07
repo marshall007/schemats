@@ -88,8 +88,8 @@ export class PostgresDatabase implements Database {
             case '_timestamptz':
                 return 'Array<Date>'
             default:
-                if (customTypes.indexOf(udtName) !== -1) {
-                    return `customTypes.${options.transformTypeName(udtName)}`
+                if (customTypes.indexOf(udtName.replace(/^_/, '')) !== -1) {
+                    return `customTypes.${options.transformTypeName(udtName.replace(/^_/, ''))}${udtName.indexOf('_') === 0 ? '[]' : ''}`
                 }
 
                 console.log(`Type [${udtName} has been mapped to [any] because no specific type has been found.`)
